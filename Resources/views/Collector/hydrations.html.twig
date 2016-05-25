@@ -48,6 +48,12 @@
                 pre {
                     padding: 5px;
                 }
+
+                .backtrace li.dark{
+                    background-color: #ddd;
+                    padding: 3px 0;
+                    margin-bottom: 5px;
+                }
             </style>
 
             {{ block('hydrations') }}
@@ -104,11 +110,15 @@
                     <td>
                         <span id="backtrace-show-{{ i }}" onclick="toggleBacktrace({{ i }}, true)">show</span>
                         <span id="backtrace-hide-{{ i }}" onclick="toggleBacktrace({{ i }}, false)" style="display: none;">hide</span>
-                        <div id="backtrace-{{ i }}" style="display: none;">
+                        <div id="backtrace-{{ i }}" class="backtrace" style="display: none;">
                         {% if hydration.backTrace is defined %}
                             <ul>
                                 {% for backTraceRow in hydration.backTrace %}
-                                    <li style="white-space: nowrap;"><b>{{ loop.index }}.</b> {{ backTraceRow.file | default('unknown') }}, <u>line</u>: {{ backTraceRow.line | default('unknown') }}, <u>class</u>: {{ backTraceRow.class | default('unknown') }}, <u>function</u>: {{ backTraceRow.function }}</li>
+                                    {% set rowClass = '' %}
+                                    {% if 'src\\Naex' in backTraceRow.file | default('') %}
+                                        {% set rowClass = 'dark' %}
+                                    {% endif %}
+                                    <li class="{{ rowClass }}" style="white-space: nowrap;"><b>{{ loop.index }}.</b> {{ backTraceRow.file | default('unknown') }}, <u>line</u>: {{ backTraceRow.line | default('unknown') }}, <u>class</u>: {{ backTraceRow.class | default('unknown') }}, <u>function</u>: {{ backTraceRow.function }}</li>
                                 {% endfor %}
                             </ul>
                         {% else %}Unknown{% endif %}
