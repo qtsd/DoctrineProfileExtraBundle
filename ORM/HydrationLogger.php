@@ -16,20 +16,22 @@ use Doctrine\ORM\EntityManager;
  * file that was distributed with this source code.
  *
  * @author Dmytro Malyshenko <dmitry@malyshenko.com>
+ *
  */
 class HydrationLogger
 {
+
     /**
      * Executed hydrations
      *
      * @var array
      */
-    public $hydrations = [];
+    public $hydrations = array ();
 
     /**
      * If Debug Stack is enabled (log queries) or not.
      *
-     * @var bool
+     * @var boolean
      */
     public $enabled = true;
 
@@ -39,15 +41,18 @@ class HydrationLogger
     public $start = null;
 
     /**
-     * @var int
+     * @var integer
      */
     public $currentHydration = 0;
 
     /**
      * Marks a hydration as started. Timing is started
      *
-     * @param string $type type of hydration
+     * @param String $type type of hydration
+     *
+     * @return void
      */
+
     public function start($type)
     {
         if ($this->enabled) {
@@ -63,13 +68,17 @@ class HydrationLogger
      *
      * @param int   $resultNum
      * @param array $aliasMap
+     *
+     * @return void
      */
+
     public function stop($resultNum, $aliasMap)
     {
         if ($this->enabled) {
             $this->hydrations[$this->currentHydration]['executionMS'] = microtime(true) - $this->start;
             $this->hydrations[$this->currentHydration]['resultNum'] = $resultNum;
             $this->hydrations[$this->currentHydration]['aliasMap'] = $aliasMap;
+            $this->hydrations[$this->currentHydration]['backTrace'] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         }
     }
 }

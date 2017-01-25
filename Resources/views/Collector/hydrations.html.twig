@@ -33,10 +33,10 @@
 {% block panel %}
     {% if 'explain' == page %}
         {{ render(controller('DoctrineBundle:Profiler:explain', {
-            'token': token,
-            'panel': 'db',
-            'connectionName': app.request.query.get('connection'),
-            'query': app.request.query.get('query')
+        'token': token,
+        'panel': 'db',
+        'connectionName': app.request.query.get('connection'),
+        'query': app.request.query.get('query')
         })) }}
     {% else %}
         <div>
@@ -48,6 +48,12 @@
                 pre {
                     padding: 5px;
                 }
+
+                .backtrace li.dark{
+                    background-color: #ddd;
+                    padding: 3px 0;
+                    margin-bottom: 5px;
+                }
             </style>
 
             {{ block('hydrations') }}
@@ -57,6 +63,7 @@
 
 {% block hydrations %}
     <h2>Hydrations</h2>
+
 
     {% if collector.hydrations is empty %}
         <p>
@@ -75,6 +82,7 @@
                 <th onclick="javascript:sortTable(this, 3, 'hydrations')" style="cursor: pointer;">
                     Type<span></span></th>
                 <th style="width: 100%;">Alias Map</th>
+                <th style="width: 100%;">Backtrace</th>
             </tr>
             </thead>
             <tbody id="hydrations">
@@ -94,10 +102,27 @@
                         {% if hydration.aliasMap is defined %}
                         <ul>
                             {% for alias, class in hydration.aliasMap %}
-                                <li>{{ alias }} => {{ class }}</li>
+                                <li style="white-space: nowrap;">{{ alias }} => {{ class }}</li>
                             {% endfor %}
                         </ul>
                         {% else %}Unknown{% endif %}
+                    </td>
+                    <td>
+                        <span id="backtrace-show-{{ i }}" onclick="toggleBacktrace({{ i }}, true)">show</span>
+                        <span id="backtrace-hide-{{ i }}" onclick="toggleBacktrace({{ i }}, false)" style="display: none;">hide</span>
+                        <div id="backtrace-{{ i }}" class="backtrace" style="display: none;">
+                        {% if hydration.backTrace is defined %}
+                            <ul>
+                                {% for backTraceRow in hydration.backTrace %}
+                                    {% set rowClass = '' %}
+                                    {% if 'src\\Naex' in backTraceRow.file | default('') %}
+                                        {% set rowClass = 'dark' %}
+                                    {% endif %}
+                                    <li class="{{ rowClass }}" style="white-space: nowrap;"><b>{{ loop.index }}.</b> {{ backTraceRow.file | default('unknown') }}, <u>line</u>: {{ backTraceRow.line | default('unknown') }}, <u>class</u>: {{ backTraceRow.class | default('unknown') }}, <u>function</u>: {{ backTraceRow.function }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}Unknown{% endif %}
+                        <div>
                     </td>
                 </tr>
             {% endfor %}
@@ -106,15 +131,21 @@
 
         <script type="text/javascript">//<![CDATA[
 
+            function toggleBacktrace(i, show) {
+                document.getElementById('backtrace-'+i).style.display = show ? 'block' : 'none';
+                document.getElementById('backtrace-hide-'+i).style.display = show ? 'block' : 'none';
+                document.getElementById('backtrace-show-'+i).style.display = show ? 'none' : 'block';
+            }
+
             function sortTable(header, column, targetId) {
                 "use strict";
 
                 var direction = parseInt(header.getAttribute('data-sort-direction')) || 1,
-                    items = [],
-                    target = document.getElementById(targetId),
-                    rows = target.children,
-                    headers = header.parentElement.children,
-                    i;
+                        items = [],
+                        target = document.getElementById(targetId),
+                        rows = target.children,
+                        headers = header.parentElement.children,
+                        i;
 
                 for (i = 0; i < rows.length; ++i) {
                     items.push(rows[i]);
@@ -145,4 +176,4 @@
 
     {% endif %}
 
-{% endblock %}
+{% endblock hydrations %}
